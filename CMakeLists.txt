@@ -106,7 +106,7 @@ SET(husky_HEADERS
 )
 
 include_directories(huskylib)
-ADD_LIBRARY(husky SHARED ${husky_SOURCES} ${husky_HEADERS})
+ADD_LIBRARY(husky ${husky_SOURCES} ${husky_HEADERS})
 set_target_properties(husky PROPERTIES VERSION ${husky_VERSION})
 set_target_properties(husky PROPERTIES PUBLIC_HEADER "${husky_HEADERS}")
 ADD_EXECUTABLE(gnmsgid src/gnmsgid.c)
@@ -116,6 +116,7 @@ if (NOT MSVC)
   INSTALL(TARGETS husky gnmsgid
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
     PUBLIC_HEADER DESTINATION include/huskylib
   )
   set(CPACK_GENERATOR ${CPACK_GENERATOR} TGZ)

@@ -1,80 +1,138 @@
-%define reldate 20160316
+%define reldate 20190311
 %define reltype C
 # may be one of: C (current), R (release), S (stable)
 
-# on default static build is made but using 'rpmbuild --without static'
-# produces the binary that uses dynamic C library
-%bcond_without static
+# release number for Release: header
+%define relnum 2
 
-# if you use 'rpmbuild --with debug' then debug binary is produced
-%bcond_with debug
+# for generic build; will override for some distributions
+%define vendor_prefix %nil
+%define vendor_suffix %nil
+%define pkg_group Libraries/FTN
+%define mnt_mail 2:5020/545
+
+# for CentOS, Fedora and RHEL
+%if %_vendor == "redhat"
+%define vendor_suffix %dist
+%endif
+
+# for ALT Linux
+%if %_vendor == "alt"
+%define vendor_prefix %_vendor
+%define pkg_group Networking/FTN
+%define mnt_mail gremlin@altlinux.org
+%endif
 
 Name: huskylib
 Version: 1.9.%{reldate}%{reltype}
-Release: 3
-Group: Libraries/FTN
-Summary: Library for the Husky Project applications
-URL: https://github.com/huskyproject/%{name}
+Release: %{vendor_prefix}%relnum%{vendor_suffix}
+Group: %pkg_group
+Summary: Libraries for the Husky Project applications
+URL: https://github.com/huskyproject/huskylib
 License: GPL
-Source: %{name}.tar.gz
-%if %{with static}
-Provides: %{name}-static-%{version}
-%endif
+Source: %{name}.tar.xz
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
+%if %_vendor == "alt"
+BuildRequires: glibc-devel-static
+%endif
+#else
+%if %_vendor == "redhat"
+BuildRequires: glibc-static
+%endif
+
 %description
-This package contains common library for the Husky Project
+This package contains common libraries for the Husky Project
 FTN software.
+
+%package devel
+Group: %pkg_group
+Summary: Development headers for %name
+BuildArch: noarch
+Requires: %name-devel-libs = %version-%release
+
+%description devel
+%summary
+
+
+%package devel-libs-shared
+Summary: Shared development libraries for %name
+Group: %pkg_group
+Requires: %name-devel = %version-%release
+Requires: %name = %version-%release
+Provides: %name-devel-libs = %version-%release
+
+%description devel-libs-shared
+%summary
+
+
+%package devel-libs-static
+Summary: Static development libraries for %name
+Group: %pkg_group
+Requires: %name-devel = %version-%release
+Provides: %name-devel-libs = %version-%release
+
+%description devel-libs-static
+%summary
+
+
 
 %prep
 %setup -q -n %{name}
+date '+char cvs_date[]="%%F";' > cvsdate.h
 
 %build
-%if %{with static}
-    %if %{with debug}
-        make DEBUG:=1
-    %endif
+# parallel build appears to be broken at least in CentOS
+%if %_vendor == "redhat"
+make DYNLIBS=1
+make
 %else
-    %if %{with debug}
-        make DYNLIBS:=1 DEBUG:=1
-    %else
-        make DYNLIBS:=1
-    %endif
+%make DYNLIBS=1
+%make
 %endif
 
-# macro 'install' is omitted for debug build bacause it strips the library
-%if ! %{with debug}
 %install
-%endif
-rm -rf %{buildroot}
-make DESTDIR=%{buildroot} install
-chmod -R a+rX,u+w,go-w %{buildroot}
+rm -rf -- %buildroot
+umask 022
+make DESTDIR=%buildroot DYNLIBS=1 install
+make DESTDIR=%buildroot install
+chmod -R a+rX,u+w,go-w %buildroot
+# do not package headers for unsupported systems
+rm -f -- \
+  %buildroot%_includedir/%name/B*.h \
+  %buildroot%_includedir/%name/D*.h \
+  %buildroot%_includedir/%name/E*.h \
+  %buildroot%_includedir/%name/H*.h \
+  %buildroot%_includedir/%name/I*.h \
+  %buildroot%_includedir/%name/M*.h \
+  %buildroot%_includedir/%name/S*.h \
+  %buildroot%_includedir/%name/W*.h \
+  ;
+
+
 
 %clean
-rm -rf %{buildroot}
+rm -rf -- %buildroot
 
-%if ! %{with static}
-%post -p /sbin/ldconfig
-
-%postun -p /sbin/ldconfig
-%endif
 
 %files
 %defattr(-,root,root)
-%{_bindir}/*
-%{_libdir}/*
-%if %{with static}
-%{_includedir}/%{name}/*
-
-%else
-
-%package devel
-Summary: Header files for the Husky Project applications
-
-%description devel
-Header files for the Husky Project applications
+%_bindir/*
+%_libdir/*.so.*
 
 %files devel
-%defattr(-,root,root)
-%{_includedir}/%{name}/*
-%endif
+%dir %_includedir/%name
+%_includedir/%name/*
+
+%files devel-libs-shared
+%_libdir/*.so
+
+%files devel-libs-static
+%_libdir/*.a
+
+%changelog
+* Mon Apr 01 2019 Gremlin from Kremlin <%{mnt_mail}> 1.9.20190311C-%{_vendor}2
+- adjust build parameters for different distributions
+
+* Mon Mar 11 2019 Gremlin from Kremlin <%{mnt_mail}> 1.9.20190311C-%{_vendor}1
+- rewrite .spec from scratch, split to subpackages

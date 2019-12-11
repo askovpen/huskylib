@@ -3,6 +3,8 @@ PROJECT(husky C)
 set(husky_VERSION 1.9.0)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+include(GNUInstallDirs)
+
 option(BUILD_SHARED_LIBS "Build shared libs" ON)
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
@@ -133,8 +135,8 @@ target_link_libraries(gnmsgid husky)
 if (NOT MSVC)
   INSTALL(TARGETS husky gnmsgid
     RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     PUBLIC_HEADER DESTINATION include/huskylib
   )
   set(CPACK_GENERATOR ${CPACK_GENERATOR} TGZ)

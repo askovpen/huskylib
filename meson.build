@@ -13,6 +13,9 @@ if cc.get_id() == 'msvc'
     '-D_WINDOWS',
     '-D_CONSOLE',
     language : 'c')
+  if get_option('default_library') != 'static'
+    add_project_arguments('-D_DLL', '-D_MAKE_DLL', language : 'c')
+  endif
 else
   add_project_arguments(
     '-DUNIX',

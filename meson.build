@@ -9,6 +9,9 @@ if cc.get_id() == 'msvc'
   add_project_arguments(
     '-D_CRT_SECURE_NO_DEPRECATE',
     '-D_CRT_NONSTDC_NO_DEPRECATE', 
+    '-DWIN32',
+    '-D_WINDOWS',
+    '-D_CONSOLE',
     language : 'c')
 else
   add_project_arguments(

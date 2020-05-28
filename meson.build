@@ -98,7 +98,7 @@ headers = files([
   'huskylib/xstr.h'
 ])
 
-incdir = include_directories('huskylib')
+incdir = include_directories(['huskylib','.'])
 
 libhusky = library('husky', src,
   include_directories : incdir,

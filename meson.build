@@ -116,3 +116,9 @@ husky_dep = declare_dependency(
   include_directories : incdir)
 
 install_headers(headers, subdir: 'huskylib')
+
+pkg = import('pkgconfig')
+
+pkg.generate(libhusky,
+             name: 'huskylib',
+             description: 'huskylib is a support library of Husky project')

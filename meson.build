@@ -3,7 +3,7 @@ project('huskylib','c', version:'1.9.0')
 cc = meson.get_compiler('c')
 
   add_project_arguments(
-    '-I.',
+    '-I'+meson.current_source_dir()+'/huskylib',
   language : 'c')
   
 if cc.get_id() == 'msvc'
@@ -104,7 +104,7 @@ headers = files([
   'huskylib/xstr.h'
 ])
 
-incdir = include_directories(['huskylib'])
+incdir = include_directories('.')
 
 libhusky = library('husky', src,
   include_directories : incdir,

@@ -2,9 +2,6 @@ project('huskylib','c', version:'1.9.0')
 
 cc = meson.get_compiler('c')
 
-link_args = []
-compile_args = []
-
 if cc.get_id() == 'msvc'
   add_project_arguments(
     '-D_CRT_SECURE_NO_DEPRECATE',
@@ -12,9 +9,11 @@ if cc.get_id() == 'msvc'
     '-DWIN32',
     '-D_WINDOWS',
     '-D_CONSOLE',
-    language : 'c')
+  language : 'c')
   if get_option('default_library') != 'static'
-    add_project_arguments('-D_DLL', '-D_MAKE_DLL', language : 'c')
+  add_project_arguments(
+    '-D_DLL', '-D_MAKE_DLL',
+  language : 'c')
   endif
 else
   add_project_arguments(
@@ -106,6 +105,10 @@ incdir = include_directories(['huskylib','.'])
 libhusky = library('husky', src,
   include_directories : incdir,
   version:'1.9.0',
+  install : true)
+executable('gnmsgid',files('src/gnmsgid.c'),
+  include_directories : incdir,
+  link_with: [libhusky],
   install : true)
 
 husky_dep = declare_dependency(
